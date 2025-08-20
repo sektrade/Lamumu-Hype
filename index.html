@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hype Runner NFT</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: linear-gradient(to top, #00111a, #002b40); }
+    canvas { display: block; margin: auto; background: transparent; }
+    #btn { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 10px 20px; font-size: 20px; }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+  <button id="btn">Zıpla</button>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Karakter resmi (base64 gömülü)
+    const playerImg = new Image();
+    playerImg.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAyAAAAGQCAYAAAAT5EKeAAAgAElEQVR4nOy9e5BcVZ7/99zsdVdVdXVRlYwQMSCKMWYxLliK4HIbLshnMkOMZeQ+V3l4uY8ls3NHEZzjN9kD5uZCztxDs3nBLDBP3rAgUg4pEWUASAiKoqqqqo+9z/uTnXV31+36kqk7f9Jb+qqlV3T3nfu73/f93f/Oe85znnnDMCgBTof9PZXQEAgOn4BwAALDgAAADGBgAAjA0AAJQSAABDCQAApBAAAGMDAABdDwAAYwMAAIwNAACYqf2P2np/f5P/8N9flcT+16bwbxH48h8lCQAAW/8jI2aPPsvs8vrQv/lh8tAfEvWc+1f/5//EHTs+mgEAAJbfay4AgOJdJ78xABDNZjD33Do+ksZ/Y3Dx9pHt59Zt/vzuZpHhN5ppz81M8zWjL2EAwO1ltA4AgMlxugDwHj/4qU8evqNmVbeHvuJXfmvbpL/Pktblajmz... (çok uzun base64 burada)
+    ";
+
+    let player = { x: 50, y: 300, w: 80, h: 80, dy: 0, jump: -15, gravity: 0.8, grounded: true };
+    let obstacles = [];
+    let frame = 0, score = 0;
+
+    function drawPlayer() {
+      ctx.drawImage(playerImg, player.x, player.y, player.w, player.h);
+    }
+
+    function updatePlayer() {
+      player.y += player.dy;
+      if (player.y + player.h < canvas.height) {
+        player.dy += player.gravity;
+        player.grounded = false;
+      } else {
+        player.y = canvas.height - player.h;
+        player.dy = 0;
+        player.grounded = true;
+      }
+    }
+
+    function spawnObstacle() {
+      if (frame % 100 === 0) {
+        obstacles.push({ x: canvas.width, y: 340, w: 40, h: 60 });
+      }
+    }
+
+    function drawObstacles() {
+      ctx.fillStyle = "red";
+      for (let o of obstacles) {
+        ctx.fillRect(o.x, o.y, o.w, o.h);
+        o.x -= 6;
+      }
+    }
+
+    function detectCollision() {
+      for (let o of obstacles) {
+        if (player.x < o.x + o.w && player.x + player.w > o.x && player.y < o.y + o.h && player.y + player.h > o.y) {
+          alert("Game Over! Score: " + score);
+          document.location.reload();
+        }
+      }
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "white";
+      ctx.font = "20px Arial";
+      ctx.fillText("Score: " + score, 20, 30);
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawPlayer();
+      updatePlayer();
+      spawnObstacle();
+      drawObstacles();
+      detectCollision();
+      drawScore();
+      frame++;
+      if (frame % 10 === 0) score++;
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space" || e.code === "ArrowUp") {
+        if (player.grounded) player.dy = player.jump;
+      }
+    });
+
+    document.getElementById("btn").addEventListener("click", () => {
+      if (player.grounded) player.dy = player.jump;
+    });
+
+    gameLoop();
+  </script>
+</body>
+</html>
